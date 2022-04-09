@@ -1,0 +1,126 @@
+package com.example.mqttdevice;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Iterator;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Service
+@EnableScheduling
+public class UploadService {
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class HumitureData {
+        long ts;
+        int value;
+    }
+
+    /**
+     * 数据集起始时间为 2017-03-09 09:11:35
+     * 加上偏移量偏移到 2022-04-09 09:11:35
+     */
+    static final long TS_OFFSET = 160444800;
+
+    /**
+     * 模拟起始时间为 2022-04-09 09:00:00
+     */
+    static final long START_TIME = 1649466000;
+
+    /**
+     * 时间流动系数
+     */
+    static final long FACTOR = 3000;
+
+    @Autowired
+    ObjectMapper objectMapper;
+
+    @Autowired
+    MqttGateway mqttGateway;
+
+    long curTime = START_TIME;
+
+    CSVParser humidityParser;
+    CSVParser temperatureParser;
+
+    Iterator<CSVRecord> humidityIt;
+    Iterator<CSVRecord> temperatureIt;
+
+    HumitureData curHumidity;
+    HumitureData curTemperature;
+
+    CSVParser readCsv(String path) throws IOException {
+        ClassPathResource resource = new ClassPathResource(path);
+        InputStream stream = resource.getInputStream();
+        InputStreamReader reader = new InputStreamReader(stream);
+
+        return new CSVParser(reader, CSVFormat.DEFAULT);
+    }
+
+    HumitureData parseData(CSVRecord r) {
+        return new HumitureData(Long.valueOf(r.get(0)), Integer.valueOf(r.get(1)));
+    }
+
+    @PostConstruct
+    void initReader() throws IOException {
+        humidityParser = readCsv("humiture/Room1_Humidity.csv");
+        temperatureParser = readCsv("humiture/Room1_Temperature.csv");
+
+        humidityIt = humidityParser.iterator();
+        temperatureIt = temperatureParser.iterator();
+
+        if (humidityIt.hasNext())
+            curHumidity = parseData(humidityIt.next());
+        if (temperatureIt.hasNext())
+            curTemperature = parseData(temperatureIt.next());
+    }
+
+    @PreDestroy
+    void closeReader() throws IOException {
+        humidityParser.close();
+        temperatureParser.close();
+    }
+
+    /**
+     * 每五秒进行一次上传
+     */
+    @Scheduled(cron = "0/5 * * * * *")
+    void uploadData() throws JsonProcessingException {
+        curTime += 5L * FACTOR;
+
+        while (curHumidity != null && curHumidity.ts <= curTime) {
+            mqttGateway.sendToMqtt(objectMapper.writeValueAsString(curHumidity), "devices/room1/humidity");
+            if (humidityIt.hasNext())
+                curHumidity = parseData(humidityIt.next());
+            else
+                curHumidity = null;
+        }
+
+        while (curTemperature != null && curTemperature.ts <= curTime) {
+            mqttGateway.sendToMqtt(objectMapper.writeValueAsString(curTemperature), "devices/room1/temperature");
+            if (temperatureIt.hasNext())
+                curTemperature = parseData(temperatureIt.next());
+            else
+                curTemperature = null;
+        }
+    }
+}
