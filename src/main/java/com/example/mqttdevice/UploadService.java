@@ -78,7 +78,7 @@ public class UploadService {
     }
 
     HumitureData parseData(CSVRecord r) {
-        return new HumitureData(Long.valueOf(r.get(0)), Float.valueOf(r.get(1)));
+        return new HumitureData(Long.valueOf(r.get(0)) + TS_OFFSET, Float.valueOf(r.get(1)));
     }
 
     @PostConstruct
