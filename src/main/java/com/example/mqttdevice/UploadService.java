@@ -23,11 +23,9 @@ import org.springframework.stereotype.Service;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Service
 @EnableScheduling
-@Slf4j
 public class UploadService {
     @Data
     @NoArgsConstructor
