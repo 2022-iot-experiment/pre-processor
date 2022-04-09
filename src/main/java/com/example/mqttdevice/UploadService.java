@@ -42,6 +42,11 @@ public class UploadService {
     static final long TS_OFFSET = 160444800;
 
     /**
+     * TB 默认的时间戳是毫秒级
+     */
+    static final long TS_FACTOR = 1000;
+
+    /**
      * 模拟起始时间为 2022-04-09 09:00:00
      */
     static final long START_TIME = 1649466000;
@@ -76,7 +81,7 @@ public class UploadService {
     }
 
     HumitureData parseData(CSVRecord r) {
-        return new HumitureData(Long.valueOf(r.get(0)) + TS_OFFSET, Float.valueOf(r.get(1)));
+        return new HumitureData((Long.valueOf(r.get(0)) + TS_OFFSET) * TS_FACTOR, Float.valueOf(r.get(1)));
     }
 
     @PostConstruct
@@ -106,7 +111,7 @@ public class UploadService {
     void uploadData() throws JsonProcessingException {
         curTime += 5L * FACTOR;
 
-        while (curHumidity != null && curHumidity.ts <= curTime) {
+        while (curHumidity != null && curHumidity.ts <= curTime * TS_FACTOR) {
             mqttGateway.sendToMqtt(objectMapper.writeValueAsString(curHumidity), "devices/room1/humidity");
             if (humidityIt.hasNext())
                 curHumidity = parseData(humidityIt.next());
@@ -114,7 +119,7 @@ public class UploadService {
                 curHumidity = null;
         }
 
-        while (curTemperature != null && curTemperature.ts <= curTime) {
+        while (curTemperature != null && curTemperature.ts <= curTime * TS_FACTOR) {
             mqttGateway.sendToMqtt(objectMapper.writeValueAsString(curTemperature), "devices/room1/temperature");
             if (temperatureIt.hasNext())
                 curTemperature = parseData(temperatureIt.next());
