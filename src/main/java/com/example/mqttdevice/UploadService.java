@@ -72,7 +72,7 @@ public class UploadService {
         InputStream stream = resource.getInputStream();
         InputStreamReader reader = new InputStreamReader(stream);
 
-        return new CSVParser(reader, CSVFormat.DEFAULT);
+        return new CSVParser(reader, CSVFormat.TDF);
     }
 
     HumitureData parseData(CSVRecord r) {
