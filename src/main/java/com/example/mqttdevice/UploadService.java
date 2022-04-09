@@ -51,8 +51,7 @@ public class UploadService {
      */
     static final long FACTOR = 3000;
 
-    @Autowired
-    ObjectMapper objectMapper;
+    ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
     MqttGateway mqttGateway;
