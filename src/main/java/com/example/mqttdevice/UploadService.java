@@ -23,9 +23,11 @@ import org.springframework.stereotype.Service;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @EnableScheduling
+@Slf4j
 public class UploadService {
     @Data
     @NoArgsConstructor
@@ -49,7 +51,7 @@ public class UploadService {
     /**
      * 时间流动系数
      */
-    static final long FACTOR = 3000;
+    static final long FACTOR = 500;
 
     ObjectMapper objectMapper = new ObjectMapper();
 
