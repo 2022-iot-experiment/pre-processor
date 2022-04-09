@@ -32,7 +32,7 @@ public class UploadService {
     @AllArgsConstructor
     public static class HumitureData {
         long ts;
-        int value;
+        float value;
     }
 
     /**
@@ -76,7 +76,7 @@ public class UploadService {
     }
 
     HumitureData parseData(CSVRecord r) {
-        return new HumitureData(Long.valueOf(r.get(0)), Integer.valueOf(r.get(1)));
+        return new HumitureData(Long.valueOf(r.get(0)), Float.valueOf(r.get(1)));
     }
 
     @PostConstruct
