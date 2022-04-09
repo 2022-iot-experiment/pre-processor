@@ -59,7 +59,10 @@ public class UploadService {
     ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
-    MqttGateway mqttGateway;
+    MqttTemperatureGateway mqttTemperatureGateway;
+
+    @Autowired
+    MqttHumidityGateway mqttHumidityGateway;
 
     long curTime = START_TIME;
 
@@ -112,7 +115,7 @@ public class UploadService {
         curTime += 5L * FACTOR;
 
         while (curHumidity != null && curHumidity.ts <= curTime * TS_FACTOR) {
-            mqttGateway.sendToMqtt(objectMapper.writeValueAsString(curHumidity), "devices/room1/humidity");
+            mqttHumidityGateway.sendToMqtt(objectMapper.writeValueAsString(curHumidity), "v1/devices/me/telemetry");
             if (humidityIt.hasNext())
                 curHumidity = parseData(humidityIt.next());
             else
@@ -120,7 +123,8 @@ public class UploadService {
         }
 
         while (curTemperature != null && curTemperature.ts <= curTime * TS_FACTOR) {
-            mqttGateway.sendToMqtt(objectMapper.writeValueAsString(curTemperature), "devices/room1/temperature");
+            mqttTemperatureGateway.sendToMqtt(objectMapper.writeValueAsString(curTemperature),
+                    "v1/devices/me/telemetry");
             if (temperatureIt.hasNext())
                 curTemperature = parseData(temperatureIt.next());
             else

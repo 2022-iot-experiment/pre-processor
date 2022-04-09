@@ -10,3 +10,15 @@ import org.springframework.stereotype.Component;
 public interface MqttGateway {
     void sendToMqtt(String data, @Header(MqttHeaders.TOPIC) String topic);
 }
+
+@Component
+@MessagingGateway(defaultRequestChannel = "mqttHumidityOutboundChannel")
+interface MqttHumidityGateway {
+    void sendToMqtt(String data, @Header(MqttHeaders.TOPIC) String topic);
+}
+
+@Component
+@MessagingGateway(defaultRequestChannel = "mqttTemperatureOutboundChannel")
+interface MqttTemperatureGateway {
+    void sendToMqtt(String data, @Header(MqttHeaders.TOPIC) String topic);
+}

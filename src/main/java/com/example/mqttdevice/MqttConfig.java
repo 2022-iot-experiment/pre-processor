@@ -62,4 +62,54 @@ public class MqttConfig {
     public MessageChannel mqttInboundChannel() {
         return new DirectChannel();
     }
+
+    @Bean
+    public MqttPahoClientFactory mqttHumidityClientFactory() {
+        DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
+        MqttConnectOptions options = new MqttConnectOptions();
+        options.setServerURIs(new String[] { "tcp://121.37.81.22:1884" });
+        options.setUserName("3oZ5TFGN6EwjeE67iNbI");
+        factory.setConnectionOptions(options);
+        return factory;
+    }
+
+    @Bean
+    @ServiceActivator(inputChannel = "mqttHumidityOutboundChannel")
+    public MessageHandler humidityMessageHandler() {
+        MqttPahoMessageHandler messageHandler = new MqttPahoMessageHandler("humidityClient",
+                mqttHumidityClientFactory());
+        messageHandler.setAsync(true);
+        messageHandler.setDefaultQos(1);
+        return messageHandler;
+    }
+
+    @Bean
+    public MessageChannel mqttHumidityOutboundChannel() {
+        return new DirectChannel();
+    }
+
+    @Bean
+    public MqttPahoClientFactory mqttTemperatureClientFactory() {
+        DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
+        MqttConnectOptions options = new MqttConnectOptions();
+        options.setServerURIs(new String[] { "tcp://121.37.81.22:1884" });
+        options.setUserName("ZA6Iyof8cSMFwfAyYOAe");
+        factory.setConnectionOptions(options);
+        return factory;
+    }
+
+    @Bean
+    @ServiceActivator(inputChannel = "mqttTemperatureOutboundChannel")
+    public MessageHandler temperatureMessageHandler() {
+        MqttPahoMessageHandler messageHandler = new MqttPahoMessageHandler("humidityClient",
+                mqttTemperatureClientFactory());
+        messageHandler.setAsync(true);
+        messageHandler.setDefaultQos(1);
+        return messageHandler;
+    }
+
+    @Bean
+    public MessageChannel mqttTemperatureOutboundChannel() {
+        return new DirectChannel();
+    }
 }
