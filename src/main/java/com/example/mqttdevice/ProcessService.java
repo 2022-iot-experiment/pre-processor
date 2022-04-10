@@ -32,7 +32,22 @@ public class ProcessService {
     }
 
     static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-    static final long TS_OFFSET = 100;
+
+    /**
+     * 数据集起始时间为 2020-02-26 11:22:36 1582687356417
+     * 加上偏移量偏移到 2021-03-09 11:22:36 1615260156000
+     */
+    static final long TS_OFFSET = 32572799583L;
+
+        /**
+     * 模拟起始时间为 2021-03-09 09:00:00
+     */
+    static final long START_TIME = 1615251600;
+
+    /**
+     * 结束时间为一个月后 2021-04-09 09:00:00
+     */
+    static final long END_TIME = 1617930000;
 
     CSVParser readCsv(String path) throws IOException {
         ClassPathResource resource = new ClassPathResource(path);
