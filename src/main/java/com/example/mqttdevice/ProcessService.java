@@ -26,7 +26,7 @@ public class ProcessService {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class SensorData {
-        int sensor_id;
+        int sensorId;
         long ts;
         float value;
     }
