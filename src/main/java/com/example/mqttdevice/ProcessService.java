@@ -39,7 +39,7 @@ public class ProcessService {
      */
     static final long TS_OFFSET = 32572799583L;
 
-        /**
+    /**
      * 模拟起始时间为 2021-03-09 09:00:00
      */
     static final long START_TIME = 1615251600;
@@ -48,6 +48,19 @@ public class ProcessService {
      * 结束时间为一个月后 2021-04-09 09:00:00
      */
     static final long END_TIME = 1617930000;
+
+    @PostConstruct
+    void initReader() throws IOException, ParseException {
+        var parser = readCsv("sensor_sample_float.csv");
+
+        for (var r : parser) {
+            var data = parseData(r);
+            log.info("data: {}", data);
+            break;
+        }
+
+        parser.close();
+    }
 
     CSVParser readCsv(String path) throws IOException {
         ClassPathResource resource = new ClassPathResource(path);
@@ -63,16 +76,4 @@ public class ProcessService {
                 Float.valueOf(r.get(3)));
     }
 
-    @PostConstruct
-    void initReader() throws IOException, ParseException {
-        var parser = readCsv("sensor_sample_float.csv");
-
-        for (var r : parser) {
-            var data = parseData(r);
-            log.info("data: {}", data);
-            break;
-        }
-
-        parser.close();
-    }
 }
