@@ -75,9 +75,42 @@ public class ProcessService {
             var data = parseData(r);
 
             // 不同的传感器变化阈值不同
-            int threshold = 10;
-            if (data.sensorId == 5892)
-                threshold = 1;
+            int threshold;
+            switch (data.sensorId) {
+                case 6127:
+                    threshold = 70;
+                    break;
+                case 5896:
+                    threshold = 10;
+                    break;
+                case 5895:
+                    threshold = 1;
+                    break;
+                case 5894:
+                    threshold = 1;
+                    break;
+                case 5893:
+                    threshold = 1;
+                    break;
+                case 5892:
+                    threshold = 1;
+                    break;
+                case 5891:
+                    threshold = 1;
+                    break;
+                case 5889:
+                    threshold = 30;
+                    break;
+                case 5888:
+                    threshold = 1;
+                    break;
+                case 5887:
+                    threshold = 300;
+                    break;
+                default:
+                    threshold = 10;
+                    break;
+            }
 
             if (data.ts + TS_OFFSET >= END_TIME)
                 break;
