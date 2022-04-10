@@ -2,9 +2,11 @@ package com.example.mqttdevice;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
@@ -13,6 +15,7 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -58,9 +61,23 @@ public class ProcessService {
     void initReader() throws IOException, ParseException {
         var parser = readCsv("/home/hebo/Projects/pre-processor/sensor_sample_int.csv");
 
+        File outputFile = new File("/home/hebo/Projects/pre-processor/sensor_sample_int_output.csv");
+        if (outputFile.delete())
+            log.info("输出文件已存在，删除成功");
+        if (outputFile.createNewFile())
+            log.info("输出文件创建成功");
+        var outputStream = new FileOutputStream(outputFile);
+        var outputWriter = new OutputStreamWriter(outputStream);
+        var csvPrinter = new CSVPrinter(outputWriter, CSVFormat.DEFAULT);
+
         int cnt = 0;
         for (var r : parser) {
             var data = parseData(r);
+
+            // 不同的传感器变化阈值不同
+            int threshold = 10;
+            if (data.sensorId == 5892)
+                threshold = 1;
 
             if (data.ts + TS_OFFSET >= END_TIME)
                 break;
@@ -68,18 +85,20 @@ public class ProcessService {
             boolean diff = false;
             if (dataMap.containsKey(data.sensorId)) {
                 var d = dataMap.get(data.sensorId);
-                if (Math.abs(d.value - data.value) >= 5)
+                if (Math.abs(d.value - data.value) >= threshold)
                     diff = true;
             } else
                 diff = true;
 
             if (diff) {
                 cnt++;
+                csvPrinter.printRecord(data.sensorId, data.ts, data.value);
                 dataMap.put(data.sensorId, data);
             }
         }
         log.info("一个月内变化数据总量: {}", cnt);
 
+        csvPrinter.close();
         parser.close();
     }
 
