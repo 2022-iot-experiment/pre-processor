@@ -45,12 +45,12 @@ public class ProcessService {
     /**
      * 模拟起始时间为 2021-03-09 09:00:00
      */
-    static final long START_TIME = 1615251600;
+    static final long START_TIME = 1615251600000L;
 
     /**
      * 结束时间为一个月后 2021-04-09 09:00:00
      */
-    static final long END_TIME = 1617930000;
+    static final long END_TIME = 1617930000000L;
 
     HashMap<Integer, SensorData> dataMap = new HashMap<>();
 
@@ -61,6 +61,9 @@ public class ProcessService {
         int cnt = 0;
         for (var r : parser) {
             var data = parseData(r);
+
+            if (data.ts + TS_OFFSET >= END_TIME)
+                break;
 
             boolean diff = false;
             if (dataMap.containsKey(data.sensorId)) {
@@ -75,7 +78,7 @@ public class ProcessService {
                 dataMap.put(data.sensorId, data);
             }
         }
-        log.info("变化数据总量: {}", cnt);
+        log.info("一个月内变化数据总量: {}", cnt);
 
         parser.close();
     }
