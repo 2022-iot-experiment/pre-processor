@@ -112,7 +112,7 @@ public class ProcessService {
                     break;
             }
 
-            if (data.ts + TS_OFFSET >= END_TIME)
+            if (data.ts >= END_TIME)
                 break;
 
             boolean diff = false;
@@ -145,7 +145,8 @@ public class ProcessService {
     }
 
     SensorData parseData(CSVRecord r) throws ParseException {
-        return new SensorData(Integer.valueOf(r.get(1)), DATE_FORMAT.parse(r.get(2).substring(0, 23)).getTime(),
+        return new SensorData(Integer.valueOf(r.get(1)),
+                DATE_FORMAT.parse(r.get(2).substring(0, 23)).getTime() + TS_OFFSET,
                 Integer.valueOf(r.get(3)));
     }
 
