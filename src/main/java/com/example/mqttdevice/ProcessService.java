@@ -68,7 +68,7 @@ public class ProcessService {
             boolean diff = false;
             if (dataMap.containsKey(data.sensorId)) {
                 var d = dataMap.get(data.sensorId);
-                if (Math.abs(d.value - data.value) >= 2)
+                if (Math.abs(d.value - data.value) >= 5)
                     diff = true;
             } else
                 diff = true;
