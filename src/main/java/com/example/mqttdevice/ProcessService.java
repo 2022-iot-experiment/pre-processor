@@ -1,10 +1,13 @@
 package com.example.mqttdevice;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 
 import javax.annotation.PostConstruct;
 
@@ -28,7 +31,7 @@ public class ProcessService {
     public static class SensorData {
         int sensorId;
         long ts;
-        float value;
+        int value;
     }
 
     static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
@@ -49,22 +52,37 @@ public class ProcessService {
      */
     static final long END_TIME = 1617930000;
 
+    HashMap<Integer, SensorData> dataMap = new HashMap<>();
+
     @PostConstruct
     void initReader() throws IOException, ParseException {
-        var parser = readCsv("sensor_sample_float.csv");
+        var parser = readCsv("/home/hebo/Projects/pre-processor/sensor_sample_int.csv");
 
+        int cnt = 0;
         for (var r : parser) {
             var data = parseData(r);
-            log.info("data: {}", data);
-            break;
+
+            boolean diff = false;
+            if (dataMap.containsKey(data.sensorId)) {
+                var d = dataMap.get(data.sensorId);
+                if (Math.abs(d.value - data.value) >= 2)
+                    diff = true;
+            } else
+                diff = true;
+
+            if (diff) {
+                cnt++;
+                dataMap.put(data.sensorId, data);
+            }
         }
+        log.info("变化数据总量: {}", cnt);
 
         parser.close();
     }
 
     CSVParser readCsv(String path) throws IOException {
-        ClassPathResource resource = new ClassPathResource(path);
-        InputStream stream = resource.getInputStream();
+        File file = new File(path);
+        InputStream stream = new FileInputStream(file);
         InputStreamReader reader = new InputStreamReader(stream);
 
         return new CSVParser(reader,
@@ -73,7 +91,7 @@ public class ProcessService {
 
     SensorData parseData(CSVRecord r) throws ParseException {
         return new SensorData(Integer.valueOf(r.get(1)), DATE_FORMAT.parse(r.get(2).substring(0, 23)).getTime(),
-                Float.valueOf(r.get(3)));
+                Integer.valueOf(r.get(3)));
     }
 
 }
